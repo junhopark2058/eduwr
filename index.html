@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나의 성장 기록 - 캐릭터 스탯 카드</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 구글 폰트: 친근하고 가독성 좋은 'Jua'와 'Pretendard' 느낌의 'Noto Sans KR' 로드 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    // Tailwind 테마 커스텀 설정 (밝고 아기자기한 교육용 게임 테마)
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            jua: ['"Jua"', 'sans-serif'],
+            sans: ['"Noto Sans KR"', 'sans-serif']
+          },
+          colors: {
+            game: {
+              bg: '#F3F4F6',
+              card: '#FFFFFF',
+              primary: '#6366F1', // 인디고 퍼플
+              secondary: '#EC4899', // 핑크
+              accent: '#F59E0B', // 골드 옐로우
+              success: '#10B981', // 그린
+              sky: '#38BDF8'
+            }
+          },
+          boxShadow: {
+            'pixel': '0 6px 0 0 rgba(0, 0, 0, 0.08), 0 10px 20px -3px rgba(0, 0, 0, 0.1)',
+            'btn': '0 4px 0 0 rgba(0, 0, 0, 0.15)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 스크롤바 커스텀 */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+
+    /* 레인지 슬라이더 스타일 */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #E2E8F0;
+      border-radius: 9999px;
+      height: 12px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: #6366F1;
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* 인쇄 모드 최적화 */
+    @media print {
+      body {
+        background: white !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-shadow-none {
+        box-shadow: none !important;
+        border: 2px solid #E2E8F0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 antialiased min-h-screen pb-12 selection:bg-indigo-100 selection:text-indigo-700">
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-3xl animate-bounce">🌟</span>
+        <div>
+          <h1 class="font-jua text-2xl text-indigo-600 tracking-wide flex items-center gap-1.5">
+            나의 성장 기록 <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-sans font-bold">HERO STATS</span>
+          </h1>
+          <p class="text-xs text-slate-500 font-medium hidden sm:block">초등학교 3~6학년을 위한 나만의 캐릭터 성장 카드</p>
+        </div>
+      </div>
+      <!-- 상단 도구 액션 버튼들 -->
+      <div class="flex items-center gap-2 no-print">
+        <button id="btn-print" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-semibold rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-sm">
+          <span>🖨️</span> <span class="hidden sm:inline">카드 인쇄하기</span>
+        </button>
+        <button id="btn-reset" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 font-semibold rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all">
+          <span>🔄</span> <span class="hidden sm:inline">처음으로</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 컨테이너 -->
+  <main class="max-w-5xl mx-auto px-4 pt-6 space-y-6">
+
+    <!-- 1. 캐릭터 기본 프로필 및 레벨 영역 -->
+    <section class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-5 sm:p-7 text-white shadow-lg relative overflow-hidden">
+      <!-- 배경 장식용 패턴 원들 -->
+      <div class="absolute -right-12 -top-12 w-48 h-48 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+      <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-pink-400/20 rounded-full blur-lg pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+        
+        <!-- 아바타 및 이름 설정 -->
+        <div class="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left w-full md:w-auto">
+          <!-- 아바타 버튼 -->
+          <div class="relative group">
+            <button id="avatar-btn" type="button" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border-4 border-white/50 flex items-center justify-center text-5xl sm:text-6xl transition-transform active:scale-95 shadow-inner cursor-pointer" title="아바타 변경">
+              <span id="player-avatar">🧙‍♂️</span>
+            </button>
+            <span class="absolute -bottom-2 -right-1 bg-amber-400 text-slate-900 text-[11px] font-bold px-2 py-0.5 rounded-full shadow border-2 border-white no-print">
+              변경 ✏️
+            </span>
+          </div>
+
+          <!-- 이름, 칭호, 좌우명 -->
+          <div class="space-y-1.5 flex-1">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <span id="player-title" class="font-bold text-xs bg-white/20 text-yellow-200 px-3 py-1 rounded-full backdrop-blur-sm border border-white/30">
+                🌱 견습 모험가
+              </span>
+              <span class="text-xs bg-indigo-900/40 px-2 py-0.5 rounded-md font-mono text-indigo-100">
+                <span id="grade-class-display">초등학교 5학년 2반</span>
+                <button id="btn-edit-profile" class="ml-1 text-xs underline text-amber-200 no-print">수정</button>
+              </span>
+            </div>
+
+            <div class="flex items-center justify-center sm:justify-start gap-2">
+              <h2 id="player-name" class="font-jua text-2xl sm:text-3xl tracking-wide drop-shadow-sm">홍길동</h2>
+              <span class="text-xs text-indigo-100 bg-white/10 px-2 py-0.5 rounded">Lv.<span id="player-level" class="font-bold text-base text-yellow-300">1</span></span>
+            </div>
+
+            <p id="player-motto" class="text-xs sm:text-sm text-indigo-100 max-w-md italic drop-shadow-sm font-medium">
+              "실수를 두려워하지 않고 매일 한 걸음씩 성장하는 멋진 주인공!"
+            </p>
+          </div>
+        </div>
+
+        <!-- 총 성장치 & 레벨 진행 바 -->
+        <div class="w-full md:w-72 bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/20 space-y-2">
+          <div class="flex justify-between items-center text-xs font-bold">
+            <span class="text-indigo-100">전체 성장 포인트 (EXP)</span>
+            <span class="text-amber-300 font-mono text-sm"><span id="total-stat-score">36</span> / <span id="max-possible-stat">60</span></span>
+          </div>
+          <!-- 프로그레스 바 -->
+          <div class="w-full bg-slate-900/30 rounded-full h-3.5 p-0.5 overflow-hidden">
+            <div id="exp-progress-bar" class="h-full bg-gradient-to-r from-amber-300 to-yellow-400 rounded-full transition-all duration-500 ease-out" style="width: 60%"></div>
+          </div>
+          <div class="flex justify-between items-center text-[11px] text-indigo-100 font-medium">
+            <span>다음 칭호까지</span>
+            <span id="next-rank-msg" class="text-yellow-200">4포인트 남음!</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. 중앙 메인 컨텐츠: (좌측) 캔버스 레이더 차트 + (우측) 스탯 컨트롤러 -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- 좌측: 레이더 차트 및 캐릭터 요약 분석 (5 컬럼) -->
+      <section class="lg:col-span-5 flex flex-col gap-6">
+        <!-- 스탯 다이어그램 카드 -->
+        <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 flex flex-col items-center relative">
+          <div class="w-full flex items-center justify-between mb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-indigo-500 text-lg">🕸️</span>
+              <h3 class="font-jua text-lg text-slate-800">성장 다각형 (능력치 방사형 맵)</h3>
+            </div>
+            <span class="text-[11px] font-semibold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+              균형 확인하기
+            </span>
+          </div>
+
+          <!-- 캔버스 영역 -->
+          <div class="relative w-full aspect-square max-w-[340px] flex items-center justify-center">
+            <canvas id="radarCanvas" class="w-full h-full cursor-crosshair"></canvas>
+            <div id="chart-center-badge" class="absolute pointer-events-none flex flex-col items-center justify-center">
+              <span class="text-2xl" id="chart-center-emoji">✨</span>
+              <span class="text-[10px] font-bold text-slate-400">BALANCE</span>
+            </div>
+          </div>
+
+          <!-- 차트 가이드 도움말 -->
+          <p class="text-xs text-slate-400 mt-2 text-center">
+            💡 다각형 면적이 넓고 둥글수록 고르게 성장하고 있다는 뜻이에요!
+          </p>
+        </div>
+
+        <!-- 캐릭터 분석 및 칭호 안내 박스 -->
+        <div class="bg-amber-50/70 border border-amber-200/70 rounded-3xl p-5 shadow-sm space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🏆</span>
+            <h4 class="font-jua text-amber-900 text-base">선생님의 성장 피드백 & 칭호 가이드</h4>
+          </div>
+          <div id="growth-feedback-text" class="text-xs text-amber-800 leading-relaxed font-medium bg-white/70 p-3 rounded-2xl border border-amber-100">
+            분석 중입니다...
+          </div>
+          <!-- 점수대별 칭호 안내 리스트 -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-semibold">
+            <div class="bg-white p-2 rounded-xl text-center border border-amber-100 text-slate-600">
+              <span class="block text-slate-400 text-[10px]">1~15점</span>
+              🌱 새싹 탐험가
+            </div>
+            <div class="bg-white p-2 rounded-xl text-center border border-amber-100 text-slate-600">
+              <span class="block text-slate-400 text-[10px]">16~30점</span>
+              ⭐ 씩씩한 모험가
+            </div>
+            <div class="bg-white p-2 rounded-xl text-center border border-amber-100 text-slate-600">
+              <span class="block text-slate-400 text-[10px]">31~45점</span>
+              🔥 열정의 히어로
+            </div>
+            <div class="bg-white p-2 rounded-xl text-center border border-amber-100 text-slate-600">
+              <span class="block text-amber-500 font-bold text-[10px]">46~60점</span>
+              👑 빛나는 마스터
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 우측: 능력치 1~10 조절 패널 (7 컬럼) -->
+      <section class="lg:col-span-7 space-y-4">
+        
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200/80">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+            <div>
+              <h3 class="font-jua text-xl text-slate-800 flex items-center gap-2">
+                <span>📊</span> 나의 6대 성장 스탯 점검
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                슬라이더나 <strong>+ / -</strong> 버튼을 눌러 나의 현재 점수(1~10점)를 매겨보세요!
+              </p>
+            </div>
+            <!-- 스탯 커스텀 추가 버튼 -->
+            <button id="btn-add-stat-modal" class="no-print self-start sm:self-auto px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors flex items-center gap-1">
+              <span>➕</span> 새 능력치 추가
+            </button>
+          </div>
+
+          <!-- 능력치 슬라이더 리스트 렌더링 컨테이너 -->
+          <div id="stats-container" class="divide-y divide-slate-100 space-y-4 pt-2">
+            <!-- 자바스크립트로 동적 렌더링 됩니다 -->
+          </div>
+        </div>
+
+        <!-- 오늘의 실천 다짐 / 성장 한 줄 일기 -->
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-jua text-lg text-slate-800 flex items-center gap-2">
+              <span>🎯</span> 오늘 나의 성장 다짐 & 미션
+            </h3>
+            <span class="text-xs text-slate-400">자동 저장됨</span>
+          </div>
+          <div class="space-y-2">
+            <textarea id="player-goal-input" rows="3" class="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none transition-all resize-none text-slate-700" placeholder="예: 오늘 배려심 스탯을 올리기 위해 짝꿍에게 먼저 따뜻한 말을 건네고, 끈기 스탯을 위해 줄넘기 100개를 꼭 해낼 거예요!"></textarea>
+            <div class="flex justify-between items-center text-xs text-slate-400">
+              <span id="save-status-indicator" class="text-emerald-600 font-medium flex items-center gap-1 opacity-0 transition-opacity">
+                <span>✅</span> 변경사항이 저장되었습니다.
+              </span>
+              <button id="btn-manual-save" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-btn active:translate-y-0.5 no-print">
+                💾 기록 저장하기
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+  </main>
+
+  <!-- 1. 아바타 선택 모달 -->
+  <div id="avatar-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 animate-scale-up">
+      <div class="flex justify-between items-center">
+        <h4 class="font-jua text-xl text-slate-800">내 영웅 아바타 고르기</h4>
+        <button id="avatar-modal-close" class="text-slate-400 hover:text-slate-600 text-xl font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-500">마음에 드는 캐릭터 아이콘을 선택해보세요!</p>
+      
+      <!-- 아바타 그리드 -->
+      <div class="grid grid-cols-4 gap-3 py-2 text-3xl" id="avatar-selection-grid">
+        <!-- 🧙‍♂️, 🦸‍♀️, 🦁, 🚀, 🤖, 🎨, ⚽, 📚, 🐬, 🌟, 🦊, 🥋, 🧑‍🚀, 🐉, 🦄, 🏆 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 프로필(이름, 학급, 다짐) 수정 모달 -->
+  <div id="profile-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center">
+        <h4 class="font-jua text-xl text-slate-800">내 정보 변경하기</h4>
+        <button id="profile-modal-close" class="text-slate-400 hover:text-slate-600 text-xl font-bold">✕</button>
+      </div>
+      <div class="space-y-3 text-sm">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">영웅(학생) 이름</label>
+          <input type="text" id="input-edit-name" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">학년 / 반 (예: 4학년 1반)</label>
+          <input type="text" id="input-edit-class" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">나의 좌우명 또는 한 마디</label>
+          <input type="text" id="input-edit-motto" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="profile-modal-cancel" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-semibold text-xs">취소</button>
+        <button id="profile-modal-save" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs">저장 완료</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 새로운 능력치 추가 모달 -->
+  <div id="add-stat-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center">
+        <h4 class="font-jua text-xl text-slate-800">새로운 성장 스탯 추가</h4>
+        <button id="add-stat-modal-close" class="text-slate-400 hover:text-slate-600 text-xl font-bold">✕</button>
+      </div>
+      <div class="space-y-3 text-sm">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">스탯 아이콘 (이모지 1개)</label>
+          <input type="text" id="input-new-stat-icon" maxlength="2" value="🎯" class="w-16 text-center text-2xl py-1 border border-slate-200 rounded-xl focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">스탯 이름 (예: 독서력, 악기 연주)</label>
+          <input type="text" id="input-new-stat-title" placeholder="스탯 이름 입력" maxlength="8" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">교육적 설명 (이 능력치는 무엇인가요?)</label>
+          <input type="text" id="input-new-stat-desc" placeholder="예: 스스로 책을 즐겨 읽는 능력" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="add-stat-modal-cancel" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-semibold text-xs">취소</button>
+        <button id="add-stat-modal-confirm" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs">추가하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 커스텀 안내/확인 모달 (alert, confirm 대신 사용) -->
+  <div id="custom-message-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+      <div id="custom-msg-icon" class="text-4xl">💡</div>
+      <h4 id="custom-msg-title" class="font-jua text-xl text-slate-800">알림</h4>
+      <p id="custom-msg-desc" class="text-xs sm:text-sm text-slate-600 leading-relaxed"></p>
+      <div id="custom-msg-actions" class="flex justify-center gap-2 pt-2">
+        <button id="custom-msg-ok-btn" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * [교육공학 설계 가이드 - 교사용 메모]
+     * 본 웹앱은 초등학교 2022 개정 교육과정의 핵심 역량(자기관리, 지식정보처리, 창의적 사고, 
+     * 심미적 감성, 협력적 소통, 공동체 역량)을 학생 친화적인 6대 스탯으로 재구성했습니다.
+     * 학생이 자신의 능력치를 스스로 메타인지(자기 성찰)하고 지속적으로 성장시킬 수 있도록 돕습니다.
+     */
+
+    // 기본 추천 스탯 목록 (선생님이 쉽게 변경 가능)
+    const DEFAULT_STATS = [
+      { id: 'stat_1', title: '지혜로운 탐구력', icon: '🧠', value: 7, desc: '새로운 것을 호기심 있게 배우고 깊이 생각하는 힘' },
+      { id: 'stat_2', title: '따뜻한 배려심',   icon: '❤️', value: 8, desc: '친구의 마음에 공감하고 먼저 친절을 베푸는 따뜻한 마음' },
+      { id: 'stat_3', title: '튼튼한 체력',     icon: '🏃‍♂️', value: 6, desc: '신나게 운동하고 건강한 몸과 마음을 지키는 튼튼함' },
+      { id: 'stat_4', title: '끈기있는 실천력', icon: '🛡️', value: 5, desc: '어려워도 포기하지 않고 끝까지 성실하게 해내는 의지' },
+      { id: 'stat_5', title: '창의적 표현력',   icon: '🎨', value: 7, desc: '그림, 글, 만들기 등으로 내 생각을 재미있게 나타내는 힘' },
+      { id: 'stat_6', title: '협동과 소통',     icon: '🤝', value: 6, desc: '친구들과 서로 의견을 나누고 힘을 합쳐 함께 해내는 능력' }
+    ];
+
+    // 선택 가능한 이모지 아바타 목록
+    const AVATAR_LIST = ['🧙‍♂️', '🦸‍♀️', '🦁', '🚀', '🤖', '🎨', '⚽', '📚', '🐬', '🌟', '🦊', '🥋', '🧑‍🚀', '🐉', '🦄', '🏆'];
+
+    // 애플리케이션 상태 (State)
+    let appState = {
+      name: '홍길동',
+      gradeClass: '초등학교 5학년 2반',
+      avatar: '🧙‍♂️',
+      motto: '실수를 두려워하지 않고 매일 한 걸음씩 성장하는 멋진 주인공!',
+      goal: '오늘 배려심 스탯을 올리기 위해 짝꿍에게 먼저 따뜻한 말을 건네고, 끈기 스탯을 위해 줄넘기 100개를 꼭 해낼 거예요!',
+      stats: JSON.parse(JSON.stringify(DEFAULT_STATS))
+    };
+
+    const STORAGE_KEY = 'my_growth_character_data_v1';
+
+    /**
+     * 로컬 스토리지에서 데이터 로드
+     */
+    function loadSavedData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appState = { ...appState, ...parsed };
+        }
+      } catch (e) {
+        console.warn('LocalStorage 데이터를 불러오는 중 오류가 발생했습니다:', e);
+      }
+    }
+
+    /**
+     * 로컬 스토리지에 데이터 저장
+     */
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        showSaveToast();
+      } catch (e) {
+        console.error('LocalStorage 저장 오류:', e);
+      }
+    }
+
+    // 저장 완료 툴팁/토스트 피드백 표시
+    let toastTimeout = null;
+    function showSaveToast() {
+      const indicator = document.getElementById('save-status-indicator');
+      if (!indicator) return;
+      indicator.style.opacity = '1';
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        indicator.style.opacity = '0';
+      }, 1800);
+    }
+
+    /**
+     * 점수 합계에 따른 레벨, 칭호 및 교육적 피드백 도출
+     */
+    function calculateCharacterMetrics() {
+      const totalScore = appState.stats.reduce((acc, cur) => acc + Number(cur.value), 0);
+      const maxPossible = appState.stats.length * 10;
+      
+      // 레벨 계산: 최소 1레벨 ~ 최대 10레벨
+      const avg = appState.stats.length > 0 ? (totalScore / appState.stats.length) : 1;
+      const level = Math.max(1, Math.min(10, Math.round(avg)));
+
+      // 총점에 따른 칭호 산출
+      let title = '🌱 새싹 모험가';
+      let badgeColor = 'bg-emerald-500';
+      let nextThreshold = 20;
+
+      if (totalScore >= 50) {
+        title = '👑 빛나는 마스터 영웅';
+        badgeColor = 'bg-amber-500';
+        nextThreshold = maxPossible;
+      } else if (totalScore >= 38) {
+        title = '🔥 열정의 성장 챔피언';
+        badgeColor = 'bg-purple-500';
+        nextThreshold = 50;
+      } else if (totalScore >= 24) {
+        title = '⭐ 씩씩한 탐험 대장';
+        badgeColor = 'bg-indigo-500';
+        nextThreshold = 38;
+      } else {
+        title = '🌱 꿈나무 모험가';
+        badgeColor = 'bg-emerald-500';
+        nextThreshold = 24;
+      }
+
+      // 교육적 분석 피드백 메시지 생성
+      let feedback = '';
+      if (appState.stats.length > 0) {
+        // 가장 높은 스탯과 낮은 스탯 추출
+        const sorted = [...appState.stats].sort((a, b) => b.value - a.value);
+        const highest = sorted[0];
+        const lowest = sorted[sorted.length - 1];
+
+        if (highest.value === lowest.value) {
+          feedback = `모든 스탯이 ${highest.value}점으로 아주 고르게 균형을 이루고 있어요! 전인적인 성장의 표본입니다. 계속해서 모든 영역을 한 단계씩 높여보세요!`;
+        } else {
+          feedback = `현재 가장 돋보이는 강점은 <strong>"${highest.icon} ${highest.title}"(${highest.value}점)</strong>입니다! 멋진 장점을 바탕으로, <strong>"${lowest.icon} ${lowest.title}"(${lowest.value}점)</strong>도 조금씩 실천해본다면 더욱 균형 잡힌 멋진 영웅으로 거듭날 수 있어요! 💪`;
+        }
+      } else {
+        feedback = '스탯을 추가하여 나만의 특별한 성장 기록을 시작해보세요!';
+      }
+
+      return {
+        totalScore,
+        maxPossible,
+        level,
+        title,
+        badgeColor,
+        nextThreshold,
+        feedback
+      };
+    }
+
+    /**
+     * 메인 화면의 모든 UI 갱신
+     */
+    function renderApp() {
+      // 1. 프로필 정보 바인딩
+      document.getElementById('player-name').textContent = appState.name;
+      document.getElementById('grade-class-display').textContent = appState.gradeClass;
+      document.getElementById('player-avatar').textContent = appState.avatar;
+      document.getElementById('player-motto').textContent = `"${appState.motto}"`;
+      document.getElementById('player-goal-input').value = appState.goal || '';
+
+      // 2. 메트릭 계산 및 표시
+      const metrics = calculateCharacterMetrics();
+      document.getElementById('player-level').textContent = metrics.level;
+      document.getElementById('player-title').textContent = metrics.title;
+      document.getElementById('total-stat-score').textContent = metrics.totalScore;
+      document.getElementById('max-possible-stat').textContent = metrics.maxPossible;
+
+      // EXP 프로그레스 바 계산
+      const percent = metrics.maxPossible > 0 ? (metrics.totalScore / metrics.maxPossible) * 100 : 0;
+      document.getElementById('exp-progress-bar').style.width = `${percent}%`;
+
+      // 남은 포인트 안내
+      const needed = Math.max(0, metrics.nextThreshold - metrics.totalScore);
+      const nextMsg = document.getElementById('next-rank-msg');
+      if (needed === 0 || metrics.totalScore >= metrics.maxPossible) {
+        nextMsg.textContent = '최고 칭호 달성! 축하합니다 🎉';
+      } else {
+        nextMsg.textContent = `다음 칭호까지 ${needed}포인트!`;
+      }
+
+      // 피드백 텍스트 반영
+      document.getElementById('growth-feedback-text').innerHTML = metrics.feedback;
+
+      // 3. 스탯 슬라이더 목록 렌더링
+      renderStatSliders();
+
+      // 4. 레이더 캔버스 차트 다시 그리기
+      drawRadarChart();
+    }
+
+    /**
+     * 스탯 슬라이더 렌더링
+     */
+    function renderStatSliders() {
+      const container = document.getElementById('stats-container');
+      container.innerHTML = '';
+
+      if (appState.stats.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-slate-400">
+            <p>등록된 스탯이 없습니다.</p>
+            <p class="text-xs mt-1">'새 능력치 추가' 버튼을 눌러보세요!</p>
+          </div>
+        `;
+        return;
+      }
+
+      appState.stats.forEach((stat, index) => {
+        const item = document.createElement('div');
+        item.className = 'pt-3 first:pt-0 space-y-2';
+
+        // 점수별 라벨 텍스트
+        let scoreLabel = '보통';
+        let scoreColor = 'text-indigo-600 bg-indigo-50';
+        if (stat.value <= 3) {
+          scoreLabel = '새싹 단계 🌱';
+          scoreColor = 'text-amber-600 bg-amber-50';
+        } else if (stat.value <= 7) {
+          scoreLabel = '성장 중 ⭐';
+          scoreColor = 'text-indigo-600 bg-indigo-50';
+        } else {
+          scoreLabel = '최고 수준 🏆';
+          scoreColor = 'text-emerald-700 bg-emerald-50';
+        }
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">${stat.icon}</span>
+              <div>
+                <span class="font-bold text-slate-800 text-sm sm:text-base">${stat.title}</span>
+                <p class="text-[11px] text-slate-400 hidden sm:block">${stat.desc}</p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${scoreColor}">
+                ${scoreLabel}
+              </span>
+              <span class="font-jua text-xl font-bold text-indigo-600 w-8 text-right font-mono">${stat.value}</span>
+              <span class="text-xs text-slate-400">/ 10</span>
+
+              <!-- 삭제 버튼 (기본 6개 초과이거나 커스텀일 때) -->
+              ${appState.stats.length > 3 ? `
+                <button data-delete-id="${stat.id}" class="btn-delete-stat text-slate-300 hover:text-rose-500 ml-1 p-1 transition-colors no-print" title="이 스탯 삭제">
+                  ✕
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- 슬라이더 및 증감 버튼 컨트롤러 -->
+          <div class="flex items-center gap-3">
+            <button data-action="dec" data-index="${index}" class="stat-step-btn w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center active:scale-95 transition-all shadow-sm no-print" title="1점 줄이기">
+              -
+            </button>
+            <input type="range" min="1" max="10" step="1" value="${stat.value}" data-index="${index}" class="stat-range-slider flex-1">
+            <button data-action="inc" data-index="${index}" class="stat-step-btn w-8 h-8 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-sm flex items-center justify-center active:scale-95 transition-all shadow-sm no-print" title="1점 늘리기">
+              +
+            </button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+
+      // 슬라이더 이벤트 바인딩
+      container.querySelectorAll('.stat-range-slider').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.dataset.index);
+          const val = parseInt(e.target.value);
+          appState.stats[idx].value = val;
+          renderApp();
+          saveData();
+        });
+      });
+
+      // 증감 버튼 이벤트 바인딩
+      container.querySelectorAll('.stat-step-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(btn.dataset.index);
+          const action = btn.dataset.action;
+          let current = appState.stats[idx].value;
+          if (action === 'inc' && current < 10) {
+            appState.stats[idx].value += 1;
+          } else if (action === 'dec' && current > 1) {
+            appState.stats[idx].value -= 1;
+          }
+          renderApp();
+          saveData();
+        });
+      });
+
+      // 삭제 버튼 이벤트
+      container.querySelectorAll('.btn-delete-stat').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.deleteId;
+          const target = appState.stats.find(s => s.id === id);
+          showConfirmModal(
+            `"${target.title}" 스탯을 삭제하시겠어요?`,
+            '한 번 삭제하면 되돌릴 수 없습니다.',
+            () => {
+              appState.stats = appState.stats.filter(s => s.id !== id);
+              renderApp();
+              saveData();
+            }
+          );
+        });
+      });
+    }
+
+    /**
+     * HTML5 Canvas를 이용한 부드러운 반응형 레이더(방사형) 차트 구현
+     */
+    function drawRadarChart() {
+      const canvas = document.getElementById('radarCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      // 고해상도(Retina 디스플레이) 대응
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const size = Math.min(rect.width, 360);
+      
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+
+      const centerX = size / 2;
+      const centerY = size / 2;
+      const radius = size * 0.38; // 레이더 최대 반경
+      const stats = appState.stats;
+      const count = stats.length;
+
+      ctx.clearRect(0, 0, size, size);
+
+      if (count < 3) {
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '12px "Noto Sans KR"';
+        ctx.textAlign = 'center';
+        ctx.fillText('스탯이 3개 이상일 때 다각형이 그려져요!', centerX, centerY);
+        return;
+      }
+
+      const angleStep = (Math.PI * 2) / count;
+
+      // 1. 배경 동심원 그리드 그리기 (10점 기준 5단계 눈금: 2, 4, 6, 8, 10점)
+      const levels = 5;
+      for (let level = 1; level <= levels; level++) {
+        const levelRadius = (radius / levels) * level;
+        ctx.beginPath();
+        for (let i = 0; i < count; i++) {
+          const angle = i * angleStep - Math.PI / 2;
+          const x = centerX + levelRadius * Math.cos(angle);
+          const y = centerY + levelRadius * Math.sin(angle);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = level === levels ? '#CBD5E1' : '#E2E8F0';
+        ctx.lineWidth = level === levels ? 1.5 : 1;
+        ctx.stroke();
+
+        // 눈금 수치 표기 (12시 방향)
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '10px "Noto Sans KR"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText((level * 2).toString(), centerX, centerY - levelRadius + 2);
+      }
+
+      // 2. 축 가이드선 (중심에서 각 꼭짓점 연결)
+      for (let i = 0; i < count; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = '#E2E8F0';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 꼭짓점 바깥 라벨 (아이콘 + 스탯명)
+        const labelRadius = radius + 22;
+        const lx = centerX + labelRadius * Math.cos(angle);
+        const ly = centerY + labelRadius * Math.sin(angle);
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // 폰트 설정
+        ctx.fillStyle = '#334155';
+        ctx.font = 'bold 11px "Noto Sans KR"';
+        
+        // 아이콘과 이름 분리 렌더링
+        const stat = stats[i];
+        ctx.fillText(`${stat.icon} ${stat.title.length > 5 ? stat.title.slice(0, 4) + '..' : stat.title}`, lx, ly);
+      }
+
+      // 3. 학생의 현재 스탯 폴리곤 영역 그리기
+      ctx.beginPath();
+      const points = [];
+      for (let i = 0; i < count; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const valRatio = Math.max(0.1, Math.min(1, stats[i].value / 10));
+        const currentRadius = radius * valRatio;
+        const x = centerX + currentRadius * Math.cos(angle);
+        const y = centerY + currentRadius * Math.sin(angle);
+        points.push({ x, y, value: stats[i].value });
+
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+
+      // 채우기 그라디언트
+      const gradient = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, radius);
+      gradient.addColorStop(0, 'rgba(99, 102, 241, 0.45)');
+      gradient.addColorStop(1, 'rgba(236, 72, 153, 0.25)');
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // 외곽선
+      ctx.strokeStyle = '#6366F1';
+      ctx.lineWidth = 3;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // 4. 각 꼭짓점 포인트 원(Point circle) 강조
+      points.forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fill();
+        ctx.strokeStyle = '#6366F1';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+      });
+    }
+
+    /**
+     * 커스텀 알림/확인 모달 관리
+     */
+    function showNotification(title, message, icon = '💡') {
+      const modal = document.getElementById('custom-message-modal');
+      document.getElementById('custom-msg-title').textContent = title;
+      document.getElementById('custom-msg-desc').innerHTML = message;
+      document.getElementById('custom-msg-icon').textContent = icon;
+      
+      const actions = document.getElementById('custom-msg-actions');
+      actions.innerHTML = `
+        <button id="custom-msg-close-btn" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs">확인</button>
+      `;
+      document.getElementById('custom-msg-close-btn').onclick = () => modal.classList.add('hidden');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function showConfirmModal(title, message, onConfirm) {
+      const modal = document.getElementById('custom-message-modal');
+      document.getElementById('custom-msg-title').textContent = title;
+      document.getElementById('custom-msg-desc').innerHTML = message;
+      document.getElementById('custom-msg-icon').textContent = '❓';
+
+      const actions = document.getElementById('custom-msg-actions');
+      actions.innerHTML = `
+        <button id="custom-msg-cancel-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-semibold text-xs">아니오</button>
+        <button id="custom-msg-yes-btn" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs">네, 할게요</button>
+      `;
+      document.getElementById('custom-msg-cancel-btn').onclick = () => modal.classList.add('hidden');
+      document.getElementById('custom-msg-yes-btn').onclick = () => {
+        modal.classList.add('hidden');
+        if (typeof onConfirm === 'function') onConfirm();
+      };
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    /**
+     * 초기 이벤트 리스너 등록
+     */
+    function initEventListeners() {
+      // 1. 아바타 선택 모달 이벤트
+      const avatarBtn = document.getElementById('avatar-btn');
+      const avatarModal = document.getElementById('avatar-modal');
+      const avatarClose = document.getElementById('avatar-modal-close');
+      const avatarGrid = document.getElementById('avatar-selection-grid');
+
+      // 아바타 그리드 버튼 생성
+      avatarGrid.innerHTML = '';
+      AVATAR_LIST.forEach(emoji => {
+        const b = document.createElement('button');
+        b.className = 'w-12 h-12 rounded-2xl hover:bg-indigo-50 border border-slate-100 flex items-center justify-center transition-all hover:scale-110 active:scale-95';
+        b.textContent = emoji;
+        b.onclick = () => {
+          appState.avatar = emoji;
+          avatarModal.classList.add('hidden');
+          avatarModal.classList.remove('flex');
+          renderApp();
+          saveData();
+        };
+        avatarGrid.appendChild(b);
+      });
+
+      avatarBtn.onclick = () => {
+        avatarModal.classList.remove('hidden');
+        avatarModal.classList.add('flex');
+      };
+      avatarClose.onclick = () => {
+        avatarModal.classList.add('hidden');
+        avatarModal.classList.remove('flex');
+      };
+
+      // 2. 프로필 수정 모달 이벤트
+      const profileModal = document.getElementById('profile-modal');
+      const btnEditProfile = document.getElementById('btn-edit-profile');
+      const profileClose = document.getElementById('profile-modal-close');
+      const profileCancel = document.getElementById('profile-modal-cancel');
+      const profileSave = document.getElementById('profile-modal-save');
+
+      const inputName = document.getElementById('input-edit-name');
+      const inputClass = document.getElementById('input-edit-class');
+      const inputMotto = document.getElementById('input-edit-motto');
+
+      btnEditProfile.onclick = () => {
+        inputName.value = appState.name;
+        inputClass.value = appState.gradeClass;
+        inputMotto.value = appState.motto;
+        profileModal.classList.remove('hidden');
+        profileModal.classList.add('flex');
+      };
+
+      const closeProfileModal = () => {
+        profileModal.classList.add('hidden');
+        profileModal.classList.remove('flex');
+      };
+      profileClose.onclick = closeProfileModal;
+      profileCancel.onclick = closeProfileModal;
+
+      profileSave.onclick = () => {
+        const trimmedName = inputName.value.trim();
+        if (!trimmedName) {
+          showNotification('이름을 입력해주세요', '멋진 영웅의 이름을 비워둘 수 없습니다!', '✍️');
+          return;
+        }
+        appState.name = trimmedName;
+        appState.gradeClass = inputClass.value.trim() || '우리들의 멋진 교실';
+        appState.motto = inputMotto.value.trim() || '하루하루 긍정적으로 성장하자!';
+        closeProfileModal();
+        renderApp();
+        saveData();
+      };
+
+      // 3. 새 스탯 추가 모달
+      const addModal = document.getElementById('add-stat-modal');
+      const btnOpenAdd = document.getElementById('btn-add-stat-modal');
+      const addClose = document.getElementById('add-stat-modal-close');
+      const addCancel = document.getElementById('add-stat-modal-cancel');
+      const addConfirm = document.getElementById('add-stat-modal-confirm');
+
+      btnOpenAdd.onclick = () => {
+        if (appState.stats.length >= 8) {
+          showNotification('스탯이 너무 많아요', '차트 가독성을 위해 스탯은 최대 8개까지 권장합니다.', '⚠️');
+          return;
+        }
+        document.getElementById('input-new-stat-title').value = '';
+        document.getElementById('input-new-stat-desc').value = '';
+        addModal.classList.remove('hidden');
+        addModal.classList.add('flex');
+      };
+
+      const closeAddModal = () => {
+        addModal.classList.add('hidden');
+        addModal.classList.remove('flex');
+      };
+      addClose.onclick = closeAddModal;
+      addCancel.onclick = closeAddModal;
+
+      addConfirm.onclick = () => {
+        const title = document.getElementById('input-new-stat-title').value.trim();
+        const icon = document.getElementById('input-new-stat-icon').value.trim() || '⭐';
+        const desc = document.getElementById('input-new-stat-desc').value.trim() || '나의 새로운 성장 능력치';
+
+        if (!title) {
+          showNotification('스탯 이름을 적어주세요', '예: 독서력, 악기 연주, 발표력 등', '📝');
+          return;
+        }
+
+        const newStat = {
+          id: 'stat_' + Date.now(),
+          title,
+          icon,
+          desc,
+          value: 5
+        };
+
+        appState.stats.push(newStat);
+        closeAddModal();
+        renderApp();
+        saveData();
+        showNotification('새로운 스탯 추가 완료!', `"${title}" 스탯이 캐릭터 카드에 추가되었습니다.`, '🎉');
+      };
+
+      // 4. 오늘의 다짐 텍스트에어리어 자동 저장
+      const goalInput = document.getElementById('player-goal-input');
+      goalInput.addEventListener('input', () => {
+        appState.goal = goalInput.value;
+        saveData();
+      });
+
+      // 수동 저장 버튼
+      document.getElementById('btn-manual-save').onclick = () => {
+        appState.goal = goalInput.value;
+        saveData();
+        showNotification('저장되었습니다!', '나의 캐릭터 성장 기록이 브라우저에 안전하게 저장되었습니다.', '💾');
+      };
+
+      // 5. 인쇄 버튼 (캐릭터 포트폴리오 인쇄)
+      document.getElementById('btn-print').onclick = () => {
+        window.print();
+      };
+
+      // 6. 데이터 초기화 버튼
+      document.getElementById('btn-reset').onclick = () => {
+        showConfirmModal(
+          '기록을 처음으로 되돌릴까요?',
+          '모든 스탯과 캐릭터 정보가 기본 상태로 리셋됩니다.',
+          () => {
+            appState = {
+              name: '홍길동',
+              gradeClass: '초등학교 5학년 2반',
+              avatar: '🧙‍♂️',
+              motto: '실수를 두려워하지 않고 매일 한 걸음씩 성장하는 멋진 주인공!',
+              goal: '오늘 배려심 스탯을 올리기 위해 짝꿍에게 먼저 따뜻한 말을 건네고, 끈기 스탯을 위해 줄넘기 100개를 꼭 해낼 거예요!',
+              stats: JSON.parse(JSON.stringify(DEFAULT_STATS))
+            };
+            saveData();
+            renderApp();
+            showNotification('초기화 완료', '모든 기록이 처음 상태로 복원되었습니다.', '🔄');
+          }
+        );
+      };
+
+      // 창 크기 변경 시 캔버스 반응형 리드로우
+      window.addEventListener('resize', () => {
+        drawRadarChart();
+      });
+    }
+
+    // 애플리케이션 시작점
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedData();
+      initEventListeners();
+      renderApp();
+    });
+  </script>
+</body>
+</html>
